@@ -1,42 +1,43 @@
 import mongoose, { Schema } from "mongoose";
 
-const bookSchema = new Schema({
+const bookSchema = new Schema(
+  {
     title: {
-        type: String,
-        required: true,
-        trim: true,
-        unique: true,
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
     },
     author: {
-        type: String,
-        required: true,
-        trim: true,
+      type: String,
+      required: true,
+      trim: true,
     },
     description: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     genre: {
-        type: String,
-        trim: true,
+      type: String,
+      trim: true,
     },
     price: {
-        type: Number,
-        required: true,
+      type: Number,
+      required: true,
     },
     stock: {
-        type: Number,
-        required: true,
-        default: 0,
+      type: Number,
+      required: true,
+      default: 0,
     },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
-}, {timestamps: true})
-
+  },
+  { timestamps: true },
+);
 
 const Book = mongoose.model("Book", bookSchema);
 

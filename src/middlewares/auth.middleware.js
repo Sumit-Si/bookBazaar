@@ -29,18 +29,24 @@ const jwtLogin = async (req, res, next) => {
 
 const checkAdmin = async (req,res,next) => {
     try {
-        const id = req?.user?.id;
+        const id = req.user?.id;
+
+        if(!id) {
+          return res.status(401).json({
+            error: "User not authenticated"
+          })
+        }
 
         const user = await User.findById(id).select("-password");
 
         if(!user) { 
-            return res.status(400).json({
-                error: "Invalid user",
+            return res.status(404).json({
+                error: "User not found",
             })
         }
 
         if(user?.role !== "admin") {
-            return res.status(400).json({
+            return res.status(403).json({
                 error: "Only admin can create or update",
             })
         }
@@ -48,7 +54,6 @@ const checkAdmin = async (req,res,next) => {
         next();
     } catch (error) {
         console.log(error);
-        
     }
 }
 
@@ -78,7 +83,6 @@ const verifyApiKey = async (req,res,next) => {
         next();
     } catch (error) {
         console.log(error);
-        next(error);
     }
 }
 

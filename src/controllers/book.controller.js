@@ -26,8 +26,6 @@ const addBook = async (req, res) => {
       createdBy: userId,
     });
 
-    await book.save();
-
     res.status(201).json({
       success: true,
       message: "Book created successfully",
@@ -46,15 +44,9 @@ const getBooks = async (req, res) => {
   try {
     const books = await Book.find();
 
-    if (!books) {
-      return res.status(404).json({
-        error: "No books found",
-      });
-    }
-
     res.status(200).json({
       success: true,
-      message: "Books found successfully",
+      message: "Books fetched successfully",
       books,
     });
   } catch (error) {
@@ -80,7 +72,7 @@ const getBookById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Book found successfully",
+      message: "Book fetched successfully",
       book,
     });
   } catch (error) {
@@ -94,7 +86,7 @@ const getBookById = async (req, res) => {
 
 const updateBookById = async (req, res) => {
   const { id } = req.params;
-  const { description, price, stock } = req.body;
+  const { title,author,description, price, stock } = req.body;
 
   try {
     const existingBook = await Book.findById(id);
@@ -108,6 +100,8 @@ const updateBookById = async (req, res) => {
     const updatedBook = await Book.findByIdAndUpdate(
       id,
       {
+        title,
+        author,
         description,
         price,
         stock,
@@ -116,10 +110,10 @@ const updateBookById = async (req, res) => {
     ).populate("createdBy", "username fullName");
 
     res.status(200).json({
-        success: true,
-        message: "Book updated successfully",
-        updatedBook
-    })
+      success: true,
+      message: "Book updated successfully",
+      updatedBook,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -133,19 +127,18 @@ const deleteBook = async (req, res) => {
   const { id } = req.params;
 
   try {
-
     const book = await Book.findByIdAndDelete(id);
 
-    if(!book) {
-        return res.status(404).json({
-            error: "Book not found",
-        })
+    if (!book) {
+      return res.status(404).json({
+        error: "Book not found",
+      });
     }
 
     res.status(200).json({
-        success: true,
-        message: "Book deleted successfully",
-    })
+      success: true,
+      message: "Book deleted successfully",
+    });
   } catch (error) {
     res.status(500).json({
       success: false,

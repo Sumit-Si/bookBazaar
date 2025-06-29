@@ -30,14 +30,6 @@ const register = async (req, res) => {
       role,
     });
 
-    if (!user) {
-      return res.status(400).json({
-        error: "User not created.",
-      });
-    }
-
-    await user.save();
-
     res.status(201).json({
       success: true,
       message: "User created successfully",
@@ -45,6 +37,8 @@ const register = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
+      message: "Internal server error",
       error,
     });
   }
@@ -97,9 +91,9 @@ const login = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Something went wrong",
-      error,
       success: false,
+      message: "Internal server error",
+      error,
     });
   }
 };
@@ -124,22 +118,16 @@ const apiKey = async (req, res) => {
       key: generatedApiKey,
     });
 
-    if (!apiKey) {
-      return res.status(400).json({
-        error: "Key is not generated",
-      });
-    }
-
-    await apiKey.save();
-
     res.status(201).json({
       success: true,
       message: "Api-key is successfully generated",
       apiKey: generatedApiKey,
     });
   } catch (error) {
-    console.error("API key generation error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("API key generation error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Internal server error", error });
   }
 };
 
@@ -147,21 +135,29 @@ const profile = async (req, res) => {
   const id = req?.user?.id;
   console.log("userId", id);
 
-  const user = await User.findById(id).select(
-    "-password -updatedAt -createdAt",
-  );
+  try {
+    const user = await User.findById(id).select(
+      "-password -updatedAt -createdAt",
+    );
 
-  if (!user) {
-    return res.status(400).json({
-      error: "Invalid user",
+    if (!user) {
+      return res.status(400).json({
+        error: "Invalid user",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Success",
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error,
     });
   }
-
-  res.status(200).json({
-    success: true,
-    message: "Success",
-    user,
-  });
 };
 
 export { register, login, apiKey, profile };

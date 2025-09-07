@@ -7,15 +7,17 @@ const userRegisterValidator = () => {
       .notEmpty()
       .withMessage("Username is required")
       .isLowercase()
-      .withMessage("Username must be lowercase")
-      .isLength({ min: 3 })
-      .withMessage("Username must be at least 3 characters long"),
+      .withMessage("Username must be in lowercase")
+      .isLength({ min: 3, max: 20 })
+      .withMessage("Username must be 3-20 characters"),
 
     body("fullName")
       .trim()
       .notEmpty()
       .withMessage("FullName is required")
-      .optional(),
+      .optional()
+      .isLength({ min: 5, max: 100 })
+      .withMessage("FullName must be 5-100 characters"),
 
     body("email")
       .trim()
@@ -28,12 +30,15 @@ const userRegisterValidator = () => {
       .trim()
       .notEmpty()
       .withMessage("Password is required")
-      .isLength({ min: 6, max: 15 })
-      .withMessage("Password must be at least 6 and max to 15 characters"),
+      .isLength({ min: 8, max: 20 })
+      .withMessage("Password must be at least 8 and max to 20 characters"),
 
     body("role")
+      .trim()
       .notEmpty()
       .withMessage("Role is required")
+      .isLowercase()
+      .withMessage("Role must be in lowercase")
       .isIn(["user", "admin"])
       .withMessage("Role is invalid"),
   ];
@@ -112,7 +117,11 @@ const addOrderValidator = () => {
 
     body("items.*.book").trim().notEmpty().withMessage("Book id is required"),
 
-    body("items.*.quantity").notEmpty().withMessage("Quantity is required").isInt({ min: 1 }).withMessage("Quantity must be numeric"),
+    body("items.*.quantity")
+      .notEmpty()
+      .withMessage("Quantity is required")
+      .isInt({ min: 1 })
+      .withMessage("Quantity must be numeric"),
   ];
 };
 
@@ -122,5 +131,5 @@ export {
   addBookValidator,
   updateBookValidator,
   addReviewValidator,
-  addOrderValidator
+  addOrderValidator,
 };

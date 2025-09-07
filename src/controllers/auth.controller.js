@@ -1,6 +1,5 @@
 import User from "../models/user.models.js";
 import ApiKey from "../models/Api_key.models.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
@@ -30,6 +29,14 @@ const register = async (req, res) => {
       role,
     });
 
+    const createdUser = await User.findById(user?._id).select("-password");
+
+    if (!createdUser) {
+      return res.status(500).json({
+        message: "Problem while creating user",
+      });
+    }
+
     res.status(201).json({
       success: true,
       message: "User created successfully",
@@ -56,7 +63,7 @@ const login = async (req, res) => {
 
     if (!user) {
       return res.status(400).json({
-        error: "Invalid user",
+        error: "Invalid credientials",
       });
     }
 
@@ -66,19 +73,19 @@ const login = async (req, res) => {
 
     if (!isMatch) {
       return res.status(400).json({
-        error: "Invalid user",
+        error: "Invalid credientials",
       });
     }
 
     // create token
-    const token = await jwt.sign({ id: user?._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user?._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_SECRET_EXPIRY,
     });
 
     const cookieOption = {
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      sameSite: "lax", // Helps prevent CSRF (consider 'strict' or 'none' based on need)
+      sameSite: "strict",
       maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
     };
 
@@ -87,7 +94,12 @@ const login = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "User logged in successfully",
-      user,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -100,7 +112,7 @@ const login = async (req, res) => {
 
 const apiKey = async (req, res) => {
   try {
-    const id = req?.user?.id;
+    const id = req.user?.id;
 
     // check if user exist
     const user = await User.findById(id).select("-password");
@@ -118,10 +130,18 @@ const apiKey = async (req, res) => {
       key: generatedApiKey,
     });
 
+    const createdApiKey = await ApiKey.findById(apiKey?._id);
+
+    if(!createdApiKey) {
+      return res.status(500).json({
+        message: "Problem while creating api key",
+      })
+    }
+
     res.status(201).json({
       success: true,
-      message: "Api-key is successfully generated",
-      apiKey: generatedApiKey,
+      message: "Api-key created successfully",
+      apiKey,
     });
   } catch (error) {
     console.error("API key generation error:", error);
@@ -132,7 +152,7 @@ const apiKey = async (req, res) => {
 };
 
 const profile = async (req, res) => {
-  const id = req?.user?.id;
+  const id = req.user?.id;
   console.log("userId", id);
 
   try {

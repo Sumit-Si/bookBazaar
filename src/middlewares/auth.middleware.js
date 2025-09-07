@@ -17,73 +17,75 @@ const jwtLogin = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("decoded data",decoded);
-    
+    console.log("decoded data", decoded);
+
     req.user = decoded;
 
     next();
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 
-const checkAdmin = async (req,res,next) => {
-    try {
-        const id = req.user?.id;
+const checkAdmin = async (req, res, next) => {
+  try {
+    const id = req.user?.id;
 
-        if(!id) {
-          return res.status(401).json({
-            error: "User not authenticated"
-          })
-        }
-
-        const user = await User.findById(id).select("-password");
-
-        if(!user) { 
-            return res.status(404).json({
-                error: "User not found",
-            })
-        }
-
-        if(user?.role !== "admin") {
-            return res.status(403).json({
-                error: "Only admin can create or update",
-            })
-        }
-
-        next();
-    } catch (error) {
-        console.log(error);
+    if (!id) {
+      return res.status(401).json({
+        error: "User not authenticated",
+      });
     }
-}
 
-const verifyApiKey = async (req,res,next) => {
-    try {
-        const apiKey = req.header("Authorization")?.replace("Bearer ", "");
-        console.log("apiKey",apiKey);
-        
+    const user = await User.findById(id).select("-password");
 
-        if(!apiKey) {
-          return res.status(404).json({
-            error: "Api key not found",
-          })
-        }
-
-        const key = await ApiKey.findOne({
-          key: apiKey,
-        })
-        console.log(key ? "found" : "Not found");
-
-        if(!key) {
-          return res.status(400).json({
-            error: "Invalid Api key"
-          })
-        }
-        
-        next();
-    } catch (error) {
-        console.log(error);
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
     }
-}
+
+    if (user?.role !== "admin") {
+      return res.status(403).json({
+        error: "Only admin can create or update",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.log(error);
+    next(error)
+  }
+};
+
+const verifyApiKey = async (req, res, next) => {
+  try {
+    const apiKey = req.header("Authorization")?.replace("Bearer ", "");
+    console.log("apiKey", apiKey);
+
+    if (!apiKey) {
+      return res.status(401).json({
+        error: "Unauthorized",
+      });
+    }
+
+    const key = await ApiKey.findOne({
+      key: apiKey,
+    });
+    console.log(key ? "found" : "Not found");
+
+    if (!key) {
+      return res.status(400).json({
+        error: "Unauthorized",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 
 export { jwtLogin, verifyApiKey, checkAdmin };

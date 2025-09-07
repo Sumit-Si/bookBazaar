@@ -37,9 +37,9 @@ const userSchema = new Schema(
       trim: true,
     },
     role: {
-        default: "user",
-        type: "string",
-        enum: ["user","admin"],
+      default: "user",
+      type: String,
+      enum: ["user", "admin"],
     },
     forgotPasswordToken: {
       type: String,
@@ -51,18 +51,17 @@ const userSchema = new Schema(
   { timestamps: true },
 );
 
-userSchema.pre("save", async function(next) {
-    if(!this.isModified("password")) return next();
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
 
-    this.password = await bcrypt.hash(this.password,10);
-    next();
-})
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
 
 // custome methods
 userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
-
 
 // model
 const User = mongoose.model("User", userSchema);

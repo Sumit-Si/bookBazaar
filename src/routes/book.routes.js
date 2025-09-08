@@ -16,17 +16,28 @@ import { validate } from "../middlewares/validator.middleware.js";
 
 const bookRoutes = express.Router();
 
-// add book route
 bookRoutes
-  .route("/books")
-  .post(jwtLogin, checkAdmin, verifyApiKey,addBookValidator(),validate, addBook)
-  .get(jwtLogin, verifyApiKey, getBooks);
+  .route("/")
+  .post(
+    jwtLogin,
+    checkAdmin,
+    // verifyApiKey,
+    addBookValidator(),
+    validate,
+    addBook,
+  )
+  .get(getBooks);
 
-// book by id route
 bookRoutes
-  .route("/books/:id")
-  .get(jwtLogin, verifyApiKey, getBookById)
-  .put(jwtLogin, checkAdmin, verifyApiKey,updateBookValidator(),validate, updateBookById)
-  .delete(jwtLogin, checkAdmin, verifyApiKey, deleteBook);
+  .route("/:id")
+  .get(jwtLogin, getBookById)
+  .put(
+    jwtLogin,
+    checkAdmin,
+    updateBookValidator(),
+    validate,
+    updateBookById,
+  )
+  .delete(jwtLogin, checkAdmin, deleteBook);
 
 export default bookRoutes;

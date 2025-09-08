@@ -1,47 +1,73 @@
 import User from "../models/user.models.js";
 import ApiKey from "../models/Api_key.models.js";
-import jwt from "jsonwebtoken";
-import crypto from "crypto";
+import {
+  deleteFromCloudinary,
+  uploadOnCloudinary,
+} from "../utils/cloudinary.js";
+import { generateAccessAndRefreshToken, generateKey } from "../utils/tokenGeneration.js";
 
 const register = async (req, res) => {
   const { username, fullName, email, password, role } = req.body;
 
-  console.log(req.body);
-
   try {
-    // check user already exist
     const existingUser = await User.findOne({
       email,
     });
 
-    console.log(existingUser, "existingUser");
     if (existingUser) {
       return res.status(400).json({
         error: "User already exist.",
       });
     }
 
-    const user = await User.create({
-      username,
-      fullName,
-      email,
-      password,
-      role,
-    });
+    console.log(req.file, "req file");
+    const avatarlocalPath = req.file?.path;
 
-    const createdUser = await User.findById(user?._id).select("-password");
-
-    if (!createdUser) {
-      return res.status(500).json({
-        message: "Problem while creating user",
+    if (!avatarlocalPath) {
+      return res.status(400).json({
+        message: "File is missing",
       });
     }
 
-    res.status(201).json({
-      success: true,
-      message: "User created successfully",
-      user,
-    });
+    let uploadResult;
+
+    try {
+      if (avatarlocalPath)
+        uploadResult = await uploadOnCloudinary(avatarlocalPath);
+
+      const user = await User.create({
+        username,
+        fullName,
+        email,
+        password,
+        role,
+        avatar: {
+          url: uploadResult ? uploadResult?.url : null,
+          localPath: avatarlocalPath || null,
+        },
+      });
+
+      const createdUser = await User.findById(user?._id).select("-password");
+
+      if (!createdUser) {
+        return res.status(500).json({
+          message: "Problem while creating user",
+        });
+      }
+
+      res.status(201).json({
+        success: true,
+        message: "User created successfully",
+        user,
+      });
+    } catch (error) {
+      if (uploadResult) await deleteFromCloudinary(uploadResult.public_id);
+      res.status(500).json({
+        success: false,
+        message: "Problem while creating user",
+        error: error.message,
+      });
+    }
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -53,7 +79,6 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-  console.log(email, password);
 
   try {
     // find user by emailId
@@ -78,70 +103,81 @@ const login = async (req, res) => {
     }
 
     // create token
-    const token = jwt.sign({ id: user?._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_SECRET_EXPIRY,
-    });
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+      user._id,
+    );
 
     const cookieOption = {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
     };
 
-    res.cookie("token", token, cookieOption);
-
-    res.status(200).json({
-      success: true,
-      message: "User logged in successfully",
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    res
+      .status(200)
+      .cookie("accessToken", accessToken, {
+        ...cookieOption,
+        maxAge: 1000 * 60 * 60 * 24,
+      })
+      .cookie("refreshToken", refreshToken, {
+        ...cookieOption,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+      })
+      .json({
+        success: true,
+        message: "User logged in successfully",
+        user: {
+          fullName: user.fullName,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          accessToken,
+          refreshToken,
+        },
+      });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Internal server error",
-      error,
+      error: error.message,
     });
   }
 };
 
 const apiKey = async (req, res) => {
   try {
-    const id = req.user?.id;
+    const id = req.user?._id;
+    const {expiresAt} = req.body;
 
     // check if user exist
-    const user = await User.findById(id).select("-password");
+    const user = await User.findById(id).select("-password -refreshToken");
 
     if (!user) {
       return res.status(400).json({
-        error: "Invalid user",
+        error: "Unauthenticated",
       });
     }
 
-    const generatedApiKey = await crypto.randomBytes(20).toString("hex");
+    const generatedApiKey = generateKey();
 
     const apiKey = await ApiKey.create({
       user: user?._id,
       key: generatedApiKey,
+      expiresAt,
     });
 
     const createdApiKey = await ApiKey.findById(apiKey?._id);
 
-    if(!createdApiKey) {
+    if (!createdApiKey) {
       return res.status(500).json({
         message: "Problem while creating api key",
-      })
+      });
     }
 
     res.status(201).json({
       success: true,
       message: "Api-key created successfully",
-      apiKey,
+      createdApiKey,
     });
   } catch (error) {
     console.error("API key generation error:", error);
@@ -152,32 +188,13 @@ const apiKey = async (req, res) => {
 };
 
 const profile = async (req, res) => {
-  const id = req.user?.id;
-  console.log("userId", id);
+  const user = req.user;
 
-  try {
-    const user = await User.findById(id).select(
-      "-password -updatedAt -createdAt",
-    );
-
-    if (!user) {
-      return res.status(400).json({
-        error: "Invalid user",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Success",
-      user,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error,
-    });
-  }
+  res.status(200).json({
+    success: true,
+    message: "Success",
+    user,
+  });
 };
 
 export { register, login, apiKey, profile };

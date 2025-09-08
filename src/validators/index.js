@@ -57,6 +57,16 @@ const userLoginValidator = () => {
   ];
 };
 
+const generateApiKeyValidator = () => {
+  return [
+    body("expiresAt")
+      .optional()
+      .trim()
+      .isISO8601()
+      .withMessage("ExpiresAt must be a valid ISO date"),
+  ]
+}
+
 // title, description, author, genre, price, stock
 // book validations
 const addBookValidator = () => {
@@ -128,6 +138,7 @@ const addOrderValidator = () => {
 export {
   userRegisterValidator,
   userLoginValidator,
+  generateApiKeyValidator,
   addBookValidator,
   updateBookValidator,
   addReviewValidator,

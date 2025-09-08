@@ -7,19 +7,28 @@ dotenv.config();
 
 const jwtLogin = async (req, res, next) => {
   try {
-    const { token } = req.cookies;
+    const token = req.cookies?.accessToken;
 
     // check if exist
     if (!token) {
       return res.status(400).json({
-        error: "Unauthenticated - Token not exist",
+        message: "Unauthenticated - Token not exist",
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     console.log("decoded data", decoded);
 
-    req.user = decoded;
+    const user = await User.findById(decoded?._id).select("-password -refreshToken");
+
+    if(!user) {
+       return res.status(400)
+        .json({
+          message: "Unauthenticated"
+        })
+    }
+
+    req.user = user;
 
     next();
   } catch (error) {
@@ -31,20 +40,6 @@ const jwtLogin = async (req, res, next) => {
 const checkAdmin = async (req, res, next) => {
   try {
     const id = req.user?.id;
-
-    if (!id) {
-      return res.status(401).json({
-        error: "User not authenticated",
-      });
-    }
-
-    const user = await User.findById(id).select("-password");
-
-    if (!user) {
-      return res.status(404).json({
-        error: "User not found",
-      });
-    }
 
     if (user?.role !== "admin") {
       return res.status(403).json({
@@ -59,6 +54,7 @@ const checkAdmin = async (req, res, next) => {
   }
 };
 
+// #TODO: not completed yet!
 const verifyApiKey = async (req, res, next) => {
   try {
     const apiKey = req.header("Authorization")?.replace("Bearer ", "");
@@ -76,7 +72,7 @@ const verifyApiKey = async (req, res, next) => {
     console.log(key ? "found" : "Not found");
 
     if (!key) {
-      return res.status(400).json({
+      return res.status(401).json({
         error: "Unauthorized",
       });
     }

@@ -86,7 +86,7 @@ const getBookById = async (req, res) => {
 
 const updateBookById = async (req, res) => {
   const { id } = req.params;
-  const { title,author,description, price, stock } = req.body;
+  const { title, author, description, price, stock } = req.body;
 
   try {
     const existingBook = await Book.findById(id);

@@ -11,6 +11,14 @@ const apiKeySchema = new Schema({
         unique: true,
         required: true,
     },
+    status: {
+        type: String,
+        enum: ["active","inactive"],
+        default: "active",
+    },
+    expiresAt: {
+        type: Date,
+    }
 
 }, { timestamps: true});
 

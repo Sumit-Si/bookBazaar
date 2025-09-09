@@ -6,7 +6,6 @@ const bookSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
     },
     author: {
       type: Schema.Types.ObjectId,
@@ -23,6 +22,11 @@ const bookSchema = new Schema(
       trim: true,
       index: true,
     },
+    ISBN: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     price: {
       type: Number,
       required: true,
@@ -32,11 +36,23 @@ const bookSchema = new Schema(
       required: true,
       default: 0,
     },
+    coverImage: {
+      type: String,
+    },
+    publisher: {
+      type: String,
+    },
+    publishedDate: {
+      type: Date,
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    deletedAt: {
+      type: Date,
+    }
   },
   { timestamps: true },
 );

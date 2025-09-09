@@ -64,32 +64,58 @@ const generateApiKeyValidator = () => {
       .trim()
       .isISO8601()
       .withMessage("ExpiresAt must be a valid ISO date"),
-  ]
-}
+  ];
+};
 
 // title, description, author, genre, price, stock
 // book validations
 const addBookValidator = () => {
   return [
-    body("title").trim().notEmpty().withMessage("Title is required"),
+    body("title")
+      .trim()
+      .notEmpty()
+      .withMessage("Title is required")
+      .isLength({min: 3, max: 100})
+      .withMessage("Title must be 3-100 characters"),
 
     body("description")
       .trim()
-      .notEmpty()
-      .withMessage("Description is required"),
+      .optional()
+      .isLength({min: 20, max: 1000})
+      .withMessage("Description must be 20-1000 characters"),
 
     body("author")
       .trim()
       .notEmpty()
-      .withMessage("Author is required")
-      .isLength({ min: 3 })
-      .withMessage("Author name must be at least 3 characters long"),
+      .withMessage("Author is required"),
 
-    body("genre").trim().notEmpty().withMessage("Genre is required"),
+    body("genre")
+    .trim()
+    .notEmpty()
+    .withMessage("Genre is required")
+    .isLowercase()
+    .withMessage("Genre must be in lowercase"),
 
     body("price").notEmpty().withMessage("Price is required"),
 
     body("stock").notEmpty().withMessage("Stock is required").default(0),
+    
+    body("ISBN")
+      .trim()
+      .notEmpty()
+      .withMessage("ISBN is required")
+      .isISBN(13)
+      .withMessage("ISBN no. must be valid ISBN-13"),
+    
+    body("publisher")
+      .trim()
+      .optional(),
+    
+    body("publishedDate")
+      .trim()
+      .optional()
+      .isISO8601()
+      .withMessage("Published date must be a valid ISO date"),
   ];
 };
 

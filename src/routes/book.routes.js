@@ -13,6 +13,7 @@ import {
 } from "../controllers/book.controller.js";
 import { addBookValidator, updateBookValidator } from "../validators/index.js";
 import { validate } from "../middlewares/validator.middleware.js";
+import {upload} from "../middlewares/multer.middleware.js";
 
 const bookRoutes = express.Router();
 
@@ -21,6 +22,7 @@ bookRoutes
   .post(
     jwtLogin,
     checkAdmin,
+    upload.single("coverImage"),
     // verifyApiKey,
     addBookValidator(),
     validate,

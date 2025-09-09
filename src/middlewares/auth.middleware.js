@@ -19,13 +19,14 @@ const jwtLogin = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     console.log("decoded data", decoded);
 
-    const user = await User.findById(decoded?._id).select("-password -refreshToken");
+    const user = await User.findById(decoded?._id).select(
+      "-password -refreshToken",
+    );
 
-    if(!user) {
-       return res.status(400)
-        .json({
-          message: "Unauthenticated"
-        })
+    if (!user) {
+      return res.status(400).json({
+        message: "Unauthenticated",
+      });
     }
 
     req.user = user;
@@ -39,7 +40,7 @@ const jwtLogin = async (req, res, next) => {
 
 const checkAdmin = async (req, res, next) => {
   try {
-    const id = req.user?.id;
+    const user = req.user;
 
     if (user?.role !== "admin") {
       return res.status(403).json({
@@ -50,7 +51,7 @@ const checkAdmin = async (req, res, next) => {
     next();
   } catch (error) {
     console.log(error);
-    next(error)
+    next(error);
   }
 };
 

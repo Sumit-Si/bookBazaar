@@ -17,6 +17,7 @@ const orderSchema = new Schema(
         quantity: {
           type: Number,
           required: true,
+          default: 1,
         },
         priceAtPurchase: {
           type: Number,
@@ -31,9 +32,17 @@ const orderSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "paid", "shipped", "cancelled"],
+      enum: ["pending", "paid", "shipped","delivered", "cancelled"],
       default: "pending",
     },
+    address: {
+      type: String,
+      required: true,
+    },
+    payment: {
+      type: Schema.Types.ObjectId,
+      ref: "Payment",
+    }
   },
   { timestamps: true },
 );

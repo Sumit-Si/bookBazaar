@@ -13,6 +13,9 @@ const reviewSchema = new Schema(
       ref: "User",
       required: true,
     },
+    deletedAt: {
+      type: Date,
+    }
   },
   { timestamps: true },
 );

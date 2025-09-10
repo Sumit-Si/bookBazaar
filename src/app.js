@@ -24,15 +24,17 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 import authRouter from "./routes/auth.routes.js";
-import bookRoutes from "./routes/book.routes.js";
-import reviewRoutes from "./routes/review.routes.js";
-import orderRoutes from "./routes/order.routes.js";
+import bookRouter from "./routes/book.routes.js";
+import reviewRouter from "./routes/review.routes.js";
+import orderRouter from "./routes/order.routes.js";
+import cartRouter from "./routes/cart.routes.js";
 
 // custom routes
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/books", bookRoutes);
-app.use("/api/v1/rview", reviewRoutes);
-app.use("/api/v1/o", orderRoutes);
+app.use("/api/v1/books", bookRouter);
+app.use("/api/v1/books/:bookId/reviews", reviewRouter);
+app.use("/api/v1/orders", orderRouter);
+app.use("/api/v1/cart", cartRouter);
 
 app.get("/test", (req, res) => {
   console.log("hello test");

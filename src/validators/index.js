@@ -133,14 +133,19 @@ const updateBookValidator = () => {
 const addReviewValidator = () => {
   return [
     body("rating")
+      .trim()
       .notEmpty()
       .withMessage("Rating is required")
-      .isNumeric()
-      .withMessage("Rating must be in numeric")
+      .isIn([1,2,3,4,5])
+      .withMessage("Rating must be either 1,2,3,4 or 5")
       .isInt({ min: 1, max: 5 })
       .withMessage("Rating must be between 1 and 5"),
 
-    body("comment").trim().notEmpty().withMessage("Comment is required"),
+    body("comment")
+      .trim()
+      .optional()
+      .isLength({min: 5, max: 120})
+      .withMessage("Comment must be 5-120 characters"),
   ];
 };
 
@@ -154,12 +159,43 @@ const addOrderValidator = () => {
     body("items.*.book").trim().notEmpty().withMessage("Book id is required"),
 
     body("items.*.quantity")
+      .trim()
       .notEmpty()
       .withMessage("Quantity is required")
       .isInt({ min: 1 })
-      .withMessage("Quantity must be numeric"),
+      .withMessage("Quantity must be a number"),
+
+    body("address")
+      .notEmpty()
+      .withMessage("Address is required")
+      .trim()
+      .isLength({min: 8, max: 200})
+      .withMessage("Address must be 8-200 characters"),
   ];
 };
+
+// cart validator
+const createCartValidator = () => {
+  return [
+    body("quantity")
+      .trim()
+      .notEmpty()
+      .withMessage("Quantity is required")
+      .isInt({ min: 1 })
+      .withMessage("Quantity must be a number"),
+  ]
+}
+
+const updateCartValidator = () => {
+  return [
+    body("quantity")
+      .trim()
+      .notEmpty()
+      .withMessage("Quantity is required")
+      .isInt({ min: 1 })
+      .withMessage("Quantity must be a number"),
+  ]
+}
 
 export {
   userRegisterValidator,
@@ -169,4 +205,6 @@ export {
   updateBookValidator,
   addReviewValidator,
   addOrderValidator,
+  createCartValidator,
+  updateCartValidator,
 };

@@ -12,16 +12,29 @@ import {
 import { addReviewValidator } from "../validators/index.js";
 import { validate } from "../middlewares/validator.middleware.js";
 
-const reviewRoutes = express.Router();
+const reviewRoutes = express.Router({ mergeParams: true });
 
 reviewRoutes
-  .route("/books/:bookId/reviews")
-  .post(jwtLogin, verifyApiKey,addReviewValidator(),validate, addReview)
-  .get(jwtLogin, verifyApiKey, getReviews);
+  .route("/")
+  .post(
+    jwtLogin,
+    // verifyApiKey,
+    addReviewValidator(),
+    validate,
+    addReview,
+  )
+  .get(
+    jwtLogin,
+    // verifyApiKey,
+    getReviews,
+  );
 
 // delete review route
-reviewRoutes
-  .route("/reviews/:id")
-  .delete(jwtLogin, checkAdmin, verifyApiKey, deleteReview);
+reviewRoutes.route("/:id").delete(
+  jwtLogin,
+  checkAdmin,
+  // verifyApiKey,
+  deleteReview,
+);
 
 export default reviewRoutes;

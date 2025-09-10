@@ -11,11 +11,25 @@ import { validate } from "../middlewares/validator.middleware.js";
 const orderRoutes = express.Router();
 
 orderRoutes
-  .route("/orders")
-  .post(jwtLogin, verifyApiKey,addOrderValidator(),validate, addOrder)
-  .get(jwtLogin, verifyApiKey, getOrders);
+  .route("/")
+  .post(
+    jwtLogin,
+    // verifyApiKey,
+    addOrderValidator(),
+    validate,
+    addOrder,
+  )
+  .get(
+    jwtLogin,
+    // verifyApiKey,
+    getOrders,
+  );
 
 // order details route
-orderRoutes.route("/orders/:id").get(jwtLogin, verifyApiKey, orderDetails);
+orderRoutes.route("/:id").get(
+  jwtLogin,
+  // verifyApiKey,
+  orderDetails,
+);
 
 export default orderRoutes;

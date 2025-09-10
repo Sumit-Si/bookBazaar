@@ -133,7 +133,7 @@ const getBooks = async (req, res) => {
       },
       deletedAt: {
         $eq: null,
-      }
+      },
     })
       .populate("author", "username fullName avatar")
       .skip(skip)
@@ -256,7 +256,7 @@ const deleteBook = async (req, res) => {
 
     const book = await Book.findByIdAndUpdate(id, {
       deletedAt: new Date(),
-    });
+    },{new: true});
 
     if (!book) {
       return res.status(500).json({

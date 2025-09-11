@@ -261,7 +261,7 @@ const deleteBook = async (req, res) => {
     if (!book) {
       return res.status(500).json({
         success: false,
-        message: "Problem while updating book",
+        message: "Problem while deleting book",
       });
     }
 

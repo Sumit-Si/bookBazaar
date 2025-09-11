@@ -1,19 +1,23 @@
 import Book from "../models/Book.models.js";
+import CartItem from "../models/CartItem.models.js";
 import Order from "../models/Order.models.js";
 
 const addOrder = async (req, res) => {
-  const { items, address } = req.body;
-  console.log(items, "items");
+  const { address } = req.body;
+  const userId = req.user?._id;
 
   try {
-    const userId = req.user?._id;
+    const cartItems = await CartItem.find({
+      user: userId,
+      deletedAt: null,
+    }).populate("book", "title price stock quantity");
 
-    // check items an array or not
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    if (!cartItems || cartItems?.length === 0) {
       return res.status(400).json({
-        message: "Order items are missing",
+        message: "Cart is empty",
       });
     }
+
     let totalAmount = 0;
     const orderData = [];
 
@@ -21,41 +25,30 @@ const addOrder = async (req, res) => {
     //     const book = await Book.findById()
     // })   // foreach isn't working as await have to be declare top level
 
-    for (const item of items) {
-      const book = await Book.findOne({
-        _id: item?.book,
-        deletedAt: {
-          $ne: null,
-        },
-      });
-      console.log(book, "book");
-
-      if (!book) {
+    for (const item of cartItems) {
+      if (!item.book) {
         return res.status(404).json({
-          message: "Book unavailable",
+          message: "Book not found",
         });
       }
 
-      if (book.stock < item.quantity) {
+      if (item.book.stock < item.quantity) {
         return res.status(400).json({
-          message: `Out of stock ${book.title}`,
+          message: `Out of stock ${item.book.title}`,
         });
       }
 
-      const price = book.price;
+      const price = item.book.price;
       totalAmount += price * item.quantity;
 
       orderData.push({
-        book: book._id,
+        book: item.book._id,
         quantity: item.quantity,
         priceAtPurchase: price,
       });
-
-      // decrease the book stock
-      book.stock -= item.quantity;
-
-      await book.save();
     }
+
+    // TODO:decrease stock count
 
     const order = await Order.create({
       user: userId,
@@ -70,12 +63,8 @@ const addOrder = async (req, res) => {
     //     })
     // }            // not necessary as Order.create throws an error if something goes wrong (e.g., validation fails) and catch will throw an error
 
-    const createdOrder = await Order.findById(order?._id).populate(
-      "user",
-      "username fullName avatar",
-    );
 
-    if (!createdOrder) {
+    if (!order) {
       res.status(500).json({
         message: "Problem while creating order",
       });
@@ -84,7 +73,7 @@ const addOrder = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Order created successfully",
-      createdOrder,
+      order,
     });
   } catch (error) {
     res.status(500).json({
@@ -109,7 +98,7 @@ const getOrders = async (req, res) => {
     const orders = await Order.find({
       user: req.user?._id,
     })
-      .populate("user","username fullName avatar")
+      .populate("user", "username fullName avatar")
       .skip(skip)
       .limit(limit);
 
@@ -141,8 +130,10 @@ const orderDetails = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const order = await Order.findById(id)
-      .populate("user","username fullName avatar");
+    const order = await Order.findById(id).populate(
+      "user",
+      "username fullName avatar",
+    );
 
     if (!order) {
       return res.status(404).json({

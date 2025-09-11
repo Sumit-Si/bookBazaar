@@ -67,7 +67,6 @@ const generateApiKeyValidator = () => {
   ];
 };
 
-// title, description, author, genre, price, stock
 // book validations
 const addBookValidator = () => {
   return [
@@ -75,42 +74,37 @@ const addBookValidator = () => {
       .trim()
       .notEmpty()
       .withMessage("Title is required")
-      .isLength({min: 3, max: 100})
+      .isLength({ min: 3, max: 100 })
       .withMessage("Title must be 3-100 characters"),
 
     body("description")
       .trim()
       .optional()
-      .isLength({min: 20, max: 1000})
+      .isLength({ min: 20, max: 1000 })
       .withMessage("Description must be 20-1000 characters"),
 
-    body("author")
-      .trim()
-      .notEmpty()
-      .withMessage("Author is required"),
+    body("author").trim().notEmpty().withMessage("Author is required"),
 
     body("genre")
-    .trim()
-    .notEmpty()
-    .withMessage("Genre is required")
-    .isLowercase()
-    .withMessage("Genre must be in lowercase"),
+      .trim()
+      .notEmpty()
+      .withMessage("Genre is required")
+      .isLowercase()
+      .withMessage("Genre must be in lowercase"),
 
     body("price").notEmpty().withMessage("Price is required"),
 
     body("stock").notEmpty().withMessage("Stock is required").default(0),
-    
+
     body("ISBN")
       .trim()
       .notEmpty()
       .withMessage("ISBN is required")
       .isISBN(13)
       .withMessage("ISBN no. must be valid ISBN-13"),
-    
-    body("publisher")
-      .trim()
-      .optional(),
-    
+
+    body("publisher").trim().optional(),
+
     body("publishedDate")
       .trim()
       .optional()
@@ -136,7 +130,7 @@ const addReviewValidator = () => {
       .trim()
       .notEmpty()
       .withMessage("Rating is required")
-      .isIn([1,2,3,4,5])
+      .isIn([1, 2, 3, 4, 5])
       .withMessage("Rating must be either 1,2,3,4 or 5")
       .isInt({ min: 1, max: 5 })
       .withMessage("Rating must be between 1 and 5"),
@@ -144,7 +138,7 @@ const addReviewValidator = () => {
     body("comment")
       .trim()
       .optional()
-      .isLength({min: 5, max: 120})
+      .isLength({ min: 5, max: 120 })
       .withMessage("Comment must be 5-120 characters"),
   ];
 };
@@ -152,24 +146,11 @@ const addReviewValidator = () => {
 // order validator
 const addOrderValidator = () => {
   return [
-    body("items")
-      .isArray({ min: 1 })
-      .withMessage("Items must be a non-empty array"),
-
-    body("items.*.book").trim().notEmpty().withMessage("Book id is required"),
-
-    body("items.*.quantity")
-      .trim()
-      .notEmpty()
-      .withMessage("Quantity is required")
-      .isInt({ min: 1 })
-      .withMessage("Quantity must be a number"),
-
     body("address")
       .notEmpty()
       .withMessage("Address is required")
       .trim()
-      .isLength({min: 8, max: 200})
+      .isLength({ min: 8, max: 200 })
       .withMessage("Address must be 8-200 characters"),
   ];
 };
@@ -183,8 +164,8 @@ const createCartValidator = () => {
       .withMessage("Quantity is required")
       .isInt({ min: 1 })
       .withMessage("Quantity must be a number"),
-  ]
-}
+  ];
+};
 
 const updateCartValidator = () => {
   return [
@@ -194,8 +175,8 @@ const updateCartValidator = () => {
       .withMessage("Quantity is required")
       .isInt({ min: 1 })
       .withMessage("Quantity must be a number"),
-  ]
-}
+  ];
+};
 
 export {
   userRegisterValidator,

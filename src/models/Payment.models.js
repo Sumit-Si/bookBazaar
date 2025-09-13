@@ -19,11 +19,27 @@ const paymentSchema = new Schema(
     provider: {
       type: String,
     }, // e.g. 'mock-gateway', 'stripe', useful for integration.
+    currency: {
+      type: String,
+      required: true,
+      uppercase: true,
+      default: "INR",
+    },
     status: {
       type: String,
-      enum: ["pending", "completed", "failed"],
+      enum: ["pending", "completed", "failed","refunded"],
       default: "pending",
     }, // Payment flow status, helps in payment tracking.
+    refundId: {
+      type: String,
+    },
+    refundAmount: {
+      type: Number,
+      min: [0, "Refund amount must be non-negative"]
+    },
+    refundReason: {
+      type: String,
+    },
     transactionId: {
       type: String,
       unique: true,

@@ -28,6 +28,7 @@ import bookRouter from "./routes/book.routes.js";
 import reviewRouter from "./routes/review.routes.js";
 import orderRouter from "./routes/order.routes.js";
 import cartRouter from "./routes/cart.routes.js";
+import paymentRouter from "./routes/payment.routes.js";
 
 // custom routes
 app.use("/api/v1/auth", authRouter);
@@ -35,6 +36,7 @@ app.use("/api/v1/books", bookRouter);
 app.use("/api/v1/books/:bookId/reviews", reviewRouter);
 app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/cart", cartRouter);
+app.use("/api/v1/payment", paymentRouter);
 
 app.get("/test", (req, res) => {
   console.log("hello test");

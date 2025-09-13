@@ -1,6 +1,7 @@
 import Book from "../models/Book.models.js";
 import CartItem from "../models/CartItem.models.js";
 import Order from "../models/Order.models.js";
+import { orderConfirmedMailGenContent, sendMail } from "../utils/mail.js";
 
 const addOrder = async (req, res) => {
   const { address } = req.body;
@@ -63,12 +64,16 @@ const addOrder = async (req, res) => {
     //     })
     // }            // not necessary as Order.create throws an error if something goes wrong (e.g., validation fails) and catch will throw an error
 
-
     if (!order) {
       res.status(500).json({
         message: "Problem while creating order",
       });
     }
+
+    await sendMail({
+      email: req.user?.email,
+      mailGenContent: orderConfirmedMailGenContent(req.user?.fullName, order),
+    });
 
     res.status(201).json({
       success: true,
